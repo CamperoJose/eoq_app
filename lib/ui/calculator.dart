@@ -6,6 +6,7 @@ import '../Componentes/chat_gpt.dart';
 import '../Componentes/statistics.dart';
 import '../Componentes/text_field2.dart';
 import '../Modelos/eoq_basico.dart';
+import '../Modelos/eoq_faltantes.dart';
 
 class CalculatorView extends StatefulWidget {
   @override
@@ -24,13 +25,14 @@ class _CalculatorViewState extends State<CalculatorView> {
   TextEditingController costoMantenerController = TextEditingController();
   TextEditingController costoPedidoController = TextEditingController();
   TextEditingController costoPorUnidadController = TextEditingController();
-  TextEditingController interesController = TextEditingController();
+  TextEditingController costoFaltanteControler = TextEditingController();
 
   List<double> CalculosEoqBasico = [0, 0, 0, 0];
+  List<double> CalculosEoqFaltantes = [0, 0, 0, 0, 0, 0];
 
   bool CalculoEoqBasico = false;
-  final bool CalculoEoqFaltantes = false;
-  final bool CalculoEoqDescuentos = false;
+  bool CalculoEoqFaltantes = false;
+  bool CalculoEoqDescuentos = false;
 
   @override
   Widget build(BuildContext context) {
@@ -121,6 +123,16 @@ class _CalculatorViewState extends State<CalculatorView> {
                                       style: TextStyle(
                                         color: Colors.orange,
                                         fontSize: 20,
+                                      ),
+                                    ),
+                                    Text(
+                                      !CalculoEoqFaltantes
+                                          ? "Sin Datos Suficientes"
+                                          : "Q: ${CalculosEoqFaltantes[0]} unidades\nS: ${CalculosEoqFaltantes[1]} unidades\nT: ${CalculosEoqFaltantes[2]} meses\nN: ${CalculosEoqFaltantes[3]} pedidos\nF. maximo: ${CalculosEoqFaltantes[4]} unidades\nCT: ${CalculosEoqFaltantes[5]} \$",
+                                          
+                                      style: TextStyle(
+                                        color: Colors.white,
+                                        fontSize: 18,
                                       ),
                                     ),
                                   ],
@@ -300,18 +312,21 @@ class _CalculatorViewState extends State<CalculatorView> {
                   ),
                   const SizedBox(height: 16),
                   TextInputForm(
-                    controller: interesController,
-                    labelText: 'I: Interés ...',
-                    prefixIcon: Icons.assessment,
+                    controller: costoFaltanteControler,
+                    labelText: 'P: Costo Faltante',
+                    prefixIcon: Icons.expand_more_outlined,
                   ),
+                  
                   const SizedBox(height: 16),
                   ElevatedButton(
                     onPressed: () {
                       EoqBasico calcularQ = EoqBasico();
+                      EoqConFaltantes calcularFaltantes = EoqConFaltantes();
                       setState(() {
                         if (demandaController != null &&
                             costoMantenerController != null &&
-                            costoPedidoController != null) {
+                            costoPedidoController != null &&
+                            costoPorUnidadController != null) {
                           CalculoEoqBasico = true;
                           CalculosEoqBasico[0] = calcularQ.calcularQ(
                               double.parse(demandaController.text),
@@ -340,6 +355,50 @@ class _CalculatorViewState extends State<CalculatorView> {
                               double.parse(
                                 demandaController.text,
                               ));
+                        }
+
+                        if (demandaController != null &&
+                            costoMantenerController != null &&
+                            costoPedidoController != null &&
+                            costoPorUnidadController != null &&
+                            costoFaltanteControler != null 
+                            ) {
+                          CalculoEoqFaltantes = true;
+                          CalculosEoqFaltantes[0] = calcularFaltantes.calcularQ(
+                            double.parse(demandaController.text),
+                            double.parse(costoMantenerController.text),
+                            double.parse(costoPedidoController.text),
+                            double.parse(costoFaltanteControler.text),
+                          );
+                          CalculosEoqFaltantes[1] = calcularFaltantes.calcularS(
+                            double.parse(demandaController.text),
+                            double.parse(costoMantenerController.text),
+                            double.parse(costoPedidoController.text),
+                            double.parse(costoFaltanteControler.text),
+                          );
+
+                          CalculosEoqFaltantes[2] = calcularFaltantes.calcularT(
+                              double.parse(demandaController.text),
+                              CalculosEoqFaltantes[0]);
+
+                          CalculosEoqFaltantes[3] = calcularFaltantes
+                              .calcularN(CalculosEoqFaltantes[2]);
+
+                          CalculosEoqFaltantes[4] =
+                              calcularFaltantes.calcularFaltanteMaximo(
+                                  CalculosEoqFaltantes[0],
+                                  CalculosEoqFaltantes[1]);
+
+                          CalculosEoqFaltantes[5] =
+                              calcularFaltantes.calcularCostoTotal(
+                            double.parse(costoPedidoController.text),
+                            double.parse(costoPorUnidadController.text),
+                            CalculosEoqFaltantes[0],
+                            double.parse(costoMantenerController.text),
+                            double.parse(demandaController.text),
+                            CalculosEoqFaltantes[1],
+                            double.parse(costoFaltanteControler.text),
+                          );
                         }
                         print(CalculosEoqBasico);
                       });
