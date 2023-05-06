@@ -1,97 +1,251 @@
 import 'package:flutter/material.dart';
-import '../Componentes/button1.dart';
-import '../Componentes/text_field1.dart';
+import 'package:flutter_bootstrap/flutter_bootstrap.dart';
+import '../Componentes/chat_gpt.dart';
+import '../Componentes/statistics.dart';
 import '../Componentes/text_field2.dart';
 import '../Modelos/eoq_basico.dart';
 
-class CalculatorView extends StatelessWidget {
-  final TextEditingController _d = TextEditingController();
-  final TextEditingController _h = TextEditingController();
-  final TextEditingController _k = TextEditingController();
-  final TextEditingController _i = TextEditingController();
+class CalculatorView extends StatefulWidget {
+  @override
+  State<CalculatorView> createState() => _CalculatorViewState();
+}
 
-  CalculatorView({Key? key}) : super(key: key);
+class _CalculatorViewState extends State<CalculatorView> {
+  TextEditingController nombreController = TextEditingController();
+  TextEditingController celularController = TextEditingController();
+  TextEditingController telefonoController = TextEditingController();
+  TextEditingController correoController = TextEditingController();
+  TextEditingController productoNombreController = TextEditingController();
+  TextEditingController descripcionController = TextEditingController();
+  TextEditingController precioVentaController = TextEditingController();
+  TextEditingController demandaController = TextEditingController();
+  TextEditingController costoMantenerController = TextEditingController();
+  TextEditingController costoPedidoController = TextEditingController();
+  TextEditingController interesController = TextEditingController();
 
   @override
   Widget build(BuildContext context) {
-    final double screenWidth = MediaQuery.of(context).size.width;
-
     return Scaffold(
-      body: Container(
-        decoration: const BoxDecoration(
-          image: DecorationImage(
-            image: AssetImage('assets/wallpaper01.png'),
-            fit: BoxFit.cover,
-          ),
-        ),
-        child: Center(
-          child: Padding(
-            padding: const EdgeInsets.all(16.0),
-            child: Column(
-              mainAxisAlignment: MainAxisAlignment.center,
-              children: [
-                Text("Calculadora de modelos EOQ",
-                    style: TextStyle(
-                        fontSize: 20,
-                        fontWeight: FontWeight.bold,
-                        color: Colors.orange)),
-                const SizedBox(height: 20),
-
-                Text(
-                    "Instrucciones: introducir los valores que se conoces. En caso de no conocer un valor, se puede dejar en blanco.",
-                    style: TextStyle(
-                        fontSize: 15,
-                        fontWeight: FontWeight.w100,
-                        color: Colors.white)),
-
-                const SizedBox(height: 20),
-
-                TextInputForm(
-                    controller: _d,
-                    labelText: "D: demanda",
-                    prefixIcon: Icons.production_quantity_limits_rounded),
-
-                const SizedBox(height: 20),
-                TextInputForm(
-                    controller: _h,
-                    labelText: "h: costo de mantener",
-                    prefixIcon: Icons.attach_money_sharp),
-
-                const SizedBox(height: 20),
-
-
-                TextInputForm(
-                    controller: _k,
-                    labelText: "k: costo de realizar pedido",
-                    prefixIcon: Icons.attach_money),
-
-                const SizedBox(height: 20),
-
-                TextInputForm(
-                    controller: _i,
-                    labelText: "i: interes ...",
-                    prefixIcon: Icons.percent_outlined),
-
-                const SizedBox(height: 20),
-
-                CustomElevatedButton(
-                  buttonText: "Calcular",
-                  onPressed: () {
-                    EoqBasico calcularQ = EoqBasico();
-
-                    print("Cantidad óptima de pedido: ${calcularQ.calcularQ(double.parse(_d.text), double.parse(_h.text), double.parse(_k.text))}");
-                    //convertir un string a int en dart:
-                    //https://stackoverflow.com/questions/12649573/how-do-i-convert-a-string-into-an-integer-in-dart
-
-
-                  },
-                ),
-                const SizedBox(
-                    height: 20), // Añadir espacio entre botón y texto
-              ],
+      appBar: AppBar(
+        title: Text('Inflow'),
+      ),
+      body: Stack(
+        children: [
+          Container(
+            decoration: const BoxDecoration(
+              image: DecorationImage(
+                image: AssetImage('assets/wallpaper01.png'),
+                fit: BoxFit.cover,
+              ),
             ),
           ),
-        ),
+          SingleChildScrollView(
+            child: Padding(
+              padding: const EdgeInsets.all(10.0),
+              child: LayoutBuilder(
+                builder: (BuildContext context, BoxConstraints constraints) {
+                  int columnCount = 1;
+                  if (constraints.maxWidth >= 800) {
+                    columnCount = 3;
+                  }
+                  return BootstrapContainer(
+                    fluid: true,
+                    children: [
+                      BootstrapRow(
+                        children: [
+                          BootstrapCol(
+                            sizes: 'col-${12 ~/ columnCount}',
+                            child: _buildProveedorForm(),
+                          ),
+                          BootstrapCol(
+                            sizes: 'col-${12 ~/ columnCount}',
+                            child: _buildProductoForm(),
+                          ),
+                          BootstrapCol(
+                            sizes: 'col-${12 ~/ columnCount}',
+                            child: _buildInventarioEoqBasicoForm(),
+                          ),
+                        ],
+                      ),
+                      const SizedBox(height: 16),
+                      // StatisticsGraph
+                      Padding(
+                        padding: EdgeInsets.all(16.0),
+                        child: BootstrapContainer(
+                          fluid: true,
+                          children: [
+                            BootstrapRow(
+                              children: [
+                                BootstrapCol(
+                                  sizes: 'col-12 col-md-6',
+                                  child: ChatGPTMessage(message: 'Hola soy chatGPT',),
+                                ),
+                              ],
+                            ),
+                          ],
+                        ),
+                      ),
+                      // StatisticsGraph
+                      const Padding(
+                        padding: EdgeInsets.all(16.0),
+                        child: StatisticsGraph(),
+                      ),
+                    ],
+                  );
+                },
+              ),
+            ),
+          ),
+        ],
+      ),
+    );
+  }
+
+  Widget _buildProveedorForm() {
+    return Card(
+      child: ExpansionTile(
+        initiallyExpanded: true,
+        title: const Text('Proveedor'),
+        children: [
+          Padding(
+            padding: const EdgeInsets.all(1.0),
+            child: Form(
+              child: Column(
+                children: [
+                  const SizedBox(height: 16),
+                  TextInputForm(
+                    controller: nombreController,
+                    labelText: 'Nombre',
+                    prefixIcon: Icons.person,
+                  ),
+                  const SizedBox(height: 16),
+                  TextInputForm(
+                    controller: celularController,
+                    labelText: 'Celular',
+                    prefixIcon: Icons.phone,
+                  ),
+                  const SizedBox(height: 16),
+                  TextInputForm(
+                    controller: telefonoController,
+                    labelText: 'Teléfono',
+                    prefixIcon: Icons.phone,
+                  ),
+                  const SizedBox(height: 16),
+                  TextInputForm(
+                    controller: correoController,
+                    labelText: 'Correo',
+                    prefixIcon: Icons.email,
+                  ),
+                  const SizedBox(height: 16),
+                  // ElevatedButton(
+                  //   onPressed: () {},
+                  //   child: Text('Agregar'),
+                  // ),
+                ],
+              ),
+            ),
+          ),
+        ],
+      ),
+    );
+  }
+
+  Widget _buildProductoForm() {
+    return Card(
+      child: ExpansionTile(
+        initiallyExpanded: true,
+        title: const Text('Producto'),
+        children: [
+          Padding(
+            padding: const EdgeInsets.all(1.0),
+            child: Form(
+              child: Column(
+                children: [
+                  const SizedBox(height: 16),
+                  TextInputForm(
+                    controller: productoNombreController,
+                    labelText: 'Nombre',
+                    prefixIcon: Icons.local_offer,
+                  ),
+                  const SizedBox(height: 16),
+                  TextInputForm(
+                    controller: descripcionController,
+                    labelText: 'Descripción',
+                    prefixIcon: Icons.description,
+                  ),
+                  const SizedBox(height: 16),
+                  TextInputForm(
+                    controller: precioVentaController,
+                    labelText: 'Precio de venta',
+                    prefixIcon: Icons.attach_money,
+                  ),
+                  const SizedBox(height: 16),
+                  // ElevatedButton(
+                  //   onPressed: () {},
+                  //   child: Text('Agregar'),
+                  // ),
+                ],
+              ),
+            ),
+          ),
+        ],
+      ),
+    );
+  }
+
+  Widget _buildInventarioEoqBasicoForm() {
+    return Card(
+      child: ExpansionTile(
+        initiallyExpanded: true,
+        title: const Text('Inventario EOQ'),
+        children: [
+          Padding(
+            padding: const EdgeInsets.all(1.0),
+            child: Form(
+              child: Column(
+                children: [
+                  const SizedBox(height: 16),
+                  TextInputForm(
+                    controller: demandaController,
+                    labelText: 'D: Demanda',
+                    prefixIcon: Icons.compare_arrows,
+                  ),
+                  const SizedBox(height: 16),
+                  TextInputForm(
+                    controller: costoMantenerController,
+                    labelText: 'H: Costo de mantener',
+                    prefixIcon: Icons.money,
+                  ),
+                  const SizedBox(height: 16),
+                  TextInputForm(
+                    controller: costoPedidoController,
+                    labelText: 'K: Costo de realizar el pedido',
+                    prefixIcon: Icons.local_shipping,
+                  ),
+                  const SizedBox(height: 16),
+                  TextInputForm(
+                    controller: interesController,
+                    labelText: 'I: Interés ...',
+                    prefixIcon: Icons.assessment,
+                  ),
+                  const SizedBox(height: 16),
+                  ElevatedButton(
+                    onPressed: () {
+                      EoqBasico calcularQ = EoqBasico();
+                      // Función para calcular la cantidad óptima de pedido
+                      print(
+                          "Cantidad óptima de pedido: ${calcularQ.calcularQ(double.parse(demandaController.text), double.parse(costoMantenerController.text), double.parse(
+                                costoPedidoController.text,
+                              ))}");
+                    },
+                    child: Text('Agregar y Calcular'),
+                  ),
+                  const SizedBox(height: 16),
+                ],
+              ),
+            ),
+          ),
+        ],
       ),
     );
   }

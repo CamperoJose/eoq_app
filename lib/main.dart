@@ -1,4 +1,4 @@
-import 'package:eoq_app/ui/login.dart';
+import 'package:eoq_app/UI/login.dart';
 import 'package:flutter/material.dart';
 
 
@@ -15,9 +15,9 @@ class MyApp extends StatelessWidget {
     return MaterialApp(
       title: 'Flutter Demo',
       theme: ThemeData(
-        primarySwatch: Colors.blue,
+        primarySwatch: Colors.orange,
         colorScheme: ColorScheme.fromSwatch(
-          primarySwatch: Colors.blue,
+          primarySwatch: Colors.orange,
           primaryColorDark: Colors.black,
           accentColor: Colors.black,
           backgroundColor: Colors.black,
