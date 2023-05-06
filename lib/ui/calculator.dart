@@ -1,3 +1,5 @@
+import 'dart:math';
+
 import 'package:flutter/material.dart';
 import 'package:flutter_bootstrap/flutter_bootstrap.dart';
 import '../Componentes/chat_gpt.dart';
@@ -27,76 +29,121 @@ class _CalculatorViewState extends State<CalculatorView> {
   Widget build(BuildContext context) {
     return Scaffold(
       appBar: AppBar(
-        title: Text('Inflow'),
+        title: Text('Mi Aplicación'),
       ),
-      body: Stack(
-        children: [
-          Container(
-            decoration: const BoxDecoration(
-              image: DecorationImage(
-                image: AssetImage('assets/wallpaper01.png'),
-                fit: BoxFit.cover,
-              ),
-            ),
+      body: Container(
+        decoration: BoxDecoration(
+          image: DecorationImage(
+            image: AssetImage('assets/wallpaper01.png'),
+            fit: BoxFit.fill, // o BoxFit.contain
           ),
-          SingleChildScrollView(
-            child: Padding(
-              padding: const EdgeInsets.all(10.0),
-              child: LayoutBuilder(
-                builder: (BuildContext context, BoxConstraints constraints) {
-                  int columnCount = 1;
-                  if (constraints.maxWidth >= 800) {
-                    columnCount = 3;
-                  }
-                  return BootstrapContainer(
-                    fluid: true,
-                    children: [
-                      BootstrapRow(
-                        children: [
-                          BootstrapCol(
-                            sizes: 'col-${12 ~/ columnCount}',
-                            child: _buildProveedorForm(),
-                          ),
-                          BootstrapCol(
-                            sizes: 'col-${12 ~/ columnCount}',
-                            child: _buildProductoForm(),
-                          ),
-                          BootstrapCol(
-                            sizes: 'col-${12 ~/ columnCount}',
-                            child: _buildInventarioEoqBasicoForm(),
-                          ),
-                        ],
-                      ),
-                      const SizedBox(height: 16),
-                      // StatisticsGraph
-                      Padding(
-                        padding: EdgeInsets.all(16.0),
-                        child: BootstrapContainer(
-                          fluid: true,
+        ),
+        child: Container(
+          child:  SingleChildScrollView(
+          child: Padding(
+            padding: const EdgeInsets.only( left: 16.0, right: 16.0, top: 16, bottom: 1000 ),
+            child: LayoutBuilder(
+              builder: (BuildContext context, BoxConstraints constraints) {
+                int columnCount = 1;
+                if (constraints.maxWidth >= 800) {
+                  columnCount = 3; 
+                }
+                return BootstrapContainer(
+                  fluid: true,
+                  children: [
+                    BootstrapRow(
+                      children: [
+                        BootstrapCol(
+                          sizes: 'col-${12 ~/ columnCount}',
+                          child: _buildProveedorForm(),
+                        ),
+                        BootstrapCol(
+                          sizes: 'col-${12 ~/ columnCount}',
+                          child: _buildProductoForm(),
+                        ),
+                        BootstrapCol(
+                          sizes: 'col-${12 ~/ columnCount}',
+                          child: _buildInventarioEoqBasicoForm(),
+                        ),
+                      ],
+                    ),
+                    const SizedBox(height: 16),
+                    // StatisticsGraph
+                    Column(
+                      children: [
+                        Text(
+                          "Cálculos",
+                          style: TextStyle(
+                              fontSize: 24,
+                              fontWeight: FontWeight.bold,
+                              color: Colors.white),
+                          textAlign: TextAlign.center,
+                        ),
+                        SizedBox(height: 10),
+                        Row(
+                          mainAxisAlignment: MainAxisAlignment.spaceEvenly,
                           children: [
-                            BootstrapRow(
-                              children: [
-                                BootstrapCol(
-                                  sizes: 'col-12 col-md-6',
-                                  child: ChatGPTMessage(message: 'Hola soy chatGPT',),
-                                ),
-                              ],
+                            Expanded(
+                              child: Text(
+                                "EOQ BÁSICO",
+                                style: TextStyle(
+                                    fontSize: 20, color: Colors.white),
+                                textAlign: TextAlign.center,
+                              ),
+                            ),
+                            SizedBox(width: 10),
+                            Expanded(
+                              child: Text(
+                                "EOQ CON FALTANTES",
+                                style: TextStyle(
+                                    fontSize: 20, color: Colors.white),
+                                textAlign: TextAlign.center,
+                              ),
+                            ),
+                            SizedBox(width: 10),
+                            Expanded(
+                              child: Text(
+                                "EOQ CON DESCUENTOS POR CANTIDAD",
+                                style: TextStyle(
+                                    fontSize: 20, color: Colors.white),
+                                textAlign: TextAlign.center,
+                              ),
                             ),
                           ],
                         ),
+                      ],
+                    ),
+                    Padding(
+                      padding: EdgeInsets.all(16.0),
+                      child: BootstrapContainer(
+                        fluid: true,
+                        children: [
+                          BootstrapRow(
+                            children: [
+                              BootstrapCol(
+                                sizes: 'col-12 col-md-6',
+                                child: ChatGPTMessage(
+                                  message: 'Hola soy chatGPT',
+                                ),
+                              ),
+                            ],
+                          ),
+                        ],
                       ),
-                      // StatisticsGraph
-                      const Padding(
-                        padding: EdgeInsets.all(16.0),
-                        child: StatisticsGraph(),
-                      ),
-                    ],
-                  );
-                },
-              ),
+                    ),
+                    // StatisticsGraph
+                    const Padding(
+                      padding: EdgeInsets.all(16.0),
+                      child: StatisticsGraph(),
+                    ),
+                  ],
+                );
+              },
             ),
           ),
-        ],
+        ),
+        )
+
       ),
     );
   }
