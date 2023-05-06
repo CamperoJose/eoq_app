@@ -1,6 +1,6 @@
 import 'dart:math';
 
-class EOQConFaltantes {
+class EoqConFaltantes {
   // Variables requeridas: D, k, h, c, l, p (DEMANDA, COSTO DE PEDIDO, COSTO DE INVENTARIO, COSTO DE UNIDAD, COSTO DE FALTANTE, COSTO DE SOBRANTE)
 
   // Función para calcular la cantidad óptima de pedido (Q) en el modelo EOQ con faltantes
