@@ -23,7 +23,14 @@ class _CalculatorViewState extends State<CalculatorView> {
   TextEditingController demandaController = TextEditingController();
   TextEditingController costoMantenerController = TextEditingController();
   TextEditingController costoPedidoController = TextEditingController();
+  TextEditingController costoPorUnidadController = TextEditingController();
   TextEditingController interesController = TextEditingController();
+
+  List<double> CalculosEoqBasico = [0, 0, 0, 0];
+
+  bool CalculoEoqBasico = false;
+  final bool CalculoEoqFaltantes = false;
+  final bool CalculoEoqDescuentos = false;
 
   @override
   Widget build(BuildContext context) {
@@ -32,119 +39,139 @@ class _CalculatorViewState extends State<CalculatorView> {
         title: Text('Mi Aplicación'),
       ),
       body: Container(
-        decoration: BoxDecoration(
-          image: DecorationImage(
-            image: AssetImage('assets/wallpaper01.png'),
-            fit: BoxFit.fill, // o BoxFit.contain
+          decoration: BoxDecoration(
+            image: DecorationImage(
+              image: AssetImage('assets/wallpaper01.png'),
+              fit: BoxFit.cover, // o BoxFit.contain
+            ),
           ),
-        ),
-        child: Container(
-          child:  SingleChildScrollView(
-          child: Padding(
-            padding: const EdgeInsets.only( left: 16.0, right: 16.0, top: 16, bottom: 1000 ),
-            child: LayoutBuilder(
-              builder: (BuildContext context, BoxConstraints constraints) {
-                int columnCount = 1;
-                if (constraints.maxWidth >= 800) {
-                  columnCount = 3; 
-                }
-                return BootstrapContainer(
-                  fluid: true,
-                  children: [
-                    BootstrapRow(
+          child: Container(
+            child: SingleChildScrollView(
+              child: Padding(
+                padding: const EdgeInsets.only(
+                    left: 16.0, right: 16.0, top: 16, bottom: 500),
+                child: LayoutBuilder(
+                  builder: (BuildContext context, BoxConstraints constraints) {
+                    int columnCount = 1;
+                    if (constraints.maxWidth >= 800) {
+                      columnCount = 3;
+                    }
+                    return BootstrapContainer(
+                      fluid: true,
                       children: [
-                        BootstrapCol(
-                          sizes: 'col-${12 ~/ columnCount}',
-                          child: _buildProveedorForm(),
-                        ),
-                        BootstrapCol(
-                          sizes: 'col-${12 ~/ columnCount}',
-                          child: _buildProductoForm(),
-                        ),
-                        BootstrapCol(
-                          sizes: 'col-${12 ~/ columnCount}',
-                          child: _buildInventarioEoqBasicoForm(),
-                        ),
-                      ],
-                    ),
-                    const SizedBox(height: 16),
-                    // StatisticsGraph
-                    Column(
-                      children: [
-                        Text(
-                          "Cálculos",
-                          style: TextStyle(
-                              fontSize: 24,
-                              fontWeight: FontWeight.bold,
-                              color: Colors.white),
-                          textAlign: TextAlign.center,
-                        ),
-                        SizedBox(height: 10),
-                        Row(
-                          mainAxisAlignment: MainAxisAlignment.spaceEvenly,
+                        BootstrapRow(
                           children: [
-                            Expanded(
-                              child: Text(
-                                "EOQ BÁSICO",
-                                style: TextStyle(
-                                    fontSize: 20, color: Colors.white),
-                                textAlign: TextAlign.center,
-                              ),
+                            BootstrapCol(
+                              sizes: 'col-${12 ~/ columnCount}',
+                              child: _buildProveedorForm(),
                             ),
-                            SizedBox(width: 10),
-                            Expanded(
-                              child: Text(
-                                "EOQ CON FALTANTES",
-                                style: TextStyle(
-                                    fontSize: 20, color: Colors.white),
-                                textAlign: TextAlign.center,
-                              ),
+                            BootstrapCol(
+                              sizes: 'col-${12 ~/ columnCount}',
+                              child: _buildProductoForm(),
                             ),
-                            SizedBox(width: 10),
-                            Expanded(
-                              child: Text(
-                                "EOQ CON DESCUENTOS POR CANTIDAD",
-                                style: TextStyle(
-                                    fontSize: 20, color: Colors.white),
-                                textAlign: TextAlign.center,
-                              ),
+                            BootstrapCol(
+                              sizes: 'col-${12 ~/ columnCount}',
+                              child: _buildInventarioEoqBasicoForm(),
                             ),
                           ],
                         ),
-                      ],
-                    ),
-                    Padding(
-                      padding: EdgeInsets.all(16.0),
-                      child: BootstrapContainer(
-                        fluid: true,
-                        children: [
-                          BootstrapRow(
-                            children: [
-                              BootstrapCol(
-                                sizes: 'col-12 col-md-6',
-                                child: ChatGPTMessage(
-                                  message: 'Hola soy chatGPT',
+                        const SizedBox(height: 16),
+                        // StatisticsGraph
+                        Column(
+                          children: [
+                            Text(
+                              "Cálculos",
+                              style: TextStyle(
+                                  fontSize: 24,
+                                  fontWeight: FontWeight.bold,
+                                  color: Colors.white),
+                              textAlign: TextAlign.center,
+                            ),
+                            SizedBox(height: 10),
+                            Row(
+                              mainAxisAlignment: MainAxisAlignment.spaceEvenly,
+                              children: [
+                                Column(
+                                  mainAxisAlignment: MainAxisAlignment.center,
+                                  children: [
+                                    Text(
+                                      "EOQ BASICO",
+                                      style: TextStyle(
+                                        color: Colors.orange,
+                                        fontSize: 20,
+                                      ),
+                                    ),
+                                    Text(
+                                      !CalculoEoqBasico
+                                          ? "Sin Datos Suficientes"
+                                          : "Q: ${CalculosEoqBasico[0]} unidades\nT: ${CalculosEoqBasico[1]} meses\nN: ${CalculosEoqBasico[2]} pedidos\nCT: ${CalculosEoqBasico[3]} \$",
+                                      style: TextStyle(
+                                        color: Colors.white,
+                                        fontSize: 18,
+                                      ),
+                                    ),
+                                  ],
                                 ),
+                                SizedBox(width: 10),
+                                Column(
+                                  mainAxisAlignment: MainAxisAlignment.center,
+                                  children: [
+                                    Text(
+                                      "EOQ FALTANTES",
+                                      style: TextStyle(
+                                        color: Colors.orange,
+                                        fontSize: 20,
+                                      ),
+                                    ),
+                                  ],
+                                ),
+                                SizedBox(width: 10),
+                                Column(
+                                  mainAxisAlignment: MainAxisAlignment.center,
+                                  children: [
+                                    Text(
+                                      "EOQ DESCUENTOS POR CANTIDAD",
+                                      style: TextStyle(
+                                        color: Colors.orange,
+                                        fontSize: 20,
+                                      ),
+                                    ),
+                                  ],
+                                ),
+                              ],
+                            ),
+                          ],
+                        ),
+                        Padding(
+                          padding: EdgeInsets.all(16.0),
+                          child: BootstrapContainer(
+                            fluid: true,
+                            children: [
+                              BootstrapRow(
+                                children: [
+                                  BootstrapCol(
+                                    sizes: 'col-12 col-md-6',
+                                    child: ChatGPTMessage(
+                                      message: 'Hola soy chatGPT',
+                                    ),
+                                  ),
+                                ],
                               ),
                             ],
                           ),
-                        ],
-                      ),
-                    ),
-                    // StatisticsGraph
-                    const Padding(
-                      padding: EdgeInsets.all(16.0),
-                      child: StatisticsGraph(),
-                    ),
-                  ],
-                );
-              },
+                        ),
+                        // StatisticsGraph
+                        const Padding(
+                          padding: EdgeInsets.all(16.0),
+                          child: StatisticsGraph(),
+                        ),
+                      ],
+                    );
+                  },
+                ),
+              ),
             ),
-          ),
-        ),
-        )
-
-      ),
+          )),
     );
   }
 
@@ -227,10 +254,6 @@ class _CalculatorViewState extends State<CalculatorView> {
                     prefixIcon: Icons.attach_money,
                   ),
                   const SizedBox(height: 16),
-                  // ElevatedButton(
-                  //   onPressed: () {},
-                  //   child: Text('Agregar'),
-                  // ),
                 ],
               ),
             ),
@@ -271,6 +294,12 @@ class _CalculatorViewState extends State<CalculatorView> {
                   ),
                   const SizedBox(height: 16),
                   TextInputForm(
+                    controller: costoPorUnidadController,
+                    labelText: 'C: Costo por Unidad',
+                    prefixIcon: Icons.production_quantity_limits_outlined,
+                  ),
+                  const SizedBox(height: 16),
+                  TextInputForm(
                     controller: interesController,
                     labelText: 'I: Interés ...',
                     prefixIcon: Icons.assessment,
@@ -279,13 +308,43 @@ class _CalculatorViewState extends State<CalculatorView> {
                   ElevatedButton(
                     onPressed: () {
                       EoqBasico calcularQ = EoqBasico();
-                      // Función para calcular la cantidad óptima de pedido
-                      print(
-                          "Cantidad óptima de pedido: ${calcularQ.calcularQ(double.parse(demandaController.text), double.parse(costoMantenerController.text), double.parse(
+                      setState(() {
+                        if (demandaController != null &&
+                            costoMantenerController != null &&
+                            costoPedidoController != null) {
+                          CalculoEoqBasico = true;
+                          CalculosEoqBasico[0] = calcularQ.calcularQ(
+                              double.parse(demandaController.text),
+                              double.parse(costoMantenerController.text),
+                              double.parse(
                                 costoPedidoController.text,
-                              ))}");
+                              ));
+                          CalculosEoqBasico[1] = calcularQ.calcularT(
+                              double.parse(demandaController.text),
+                              CalculosEoqBasico[0]);
+
+                          CalculosEoqBasico[2] =
+                              calcularQ.calcularN(CalculosEoqBasico[1]);
+
+                          CalculosEoqBasico[3] = calcularQ.calcularCostoTotal(
+                              double.parse(
+                                costoPedidoController.text,
+                              ),
+                              double.parse(
+                                costoPorUnidadController.text,
+                              ),
+                              CalculosEoqBasico[0],
+                              double.parse(
+                                costoMantenerController.text,
+                              ),
+                              double.parse(
+                                demandaController.text,
+                              ));
+                        }
+                        print(CalculosEoqBasico);
+                      });
                     },
-                    child: Text('Agregar y Calcular'),
+                    child: Text('Calcular'),
                   ),
                   const SizedBox(height: 16),
                 ],
