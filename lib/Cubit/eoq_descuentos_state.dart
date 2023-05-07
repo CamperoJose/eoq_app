@@ -2,7 +2,7 @@ part of 'eoq_descuentos_cubit.dart';
 
 @immutable
 class EoqDescuentosState {
-  final double? calculoQ;
+  final double calculoQ;
   final double? cantidadOrdenar;
   final double? costoPorOrdenar;
   final double? costoAnualPedido;
@@ -10,7 +10,7 @@ class EoqDescuentosState {
   final double? costoTotal;
 
   EoqDescuentosState({
-    this.calculoQ,
+    required this.calculoQ,
     this.cantidadOrdenar,
     this.costoPorOrdenar,
     this.costoAnualPedido,

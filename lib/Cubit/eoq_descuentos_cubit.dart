@@ -4,7 +4,7 @@ import 'package:meta/meta.dart';
 part 'eoq_descuentos_state.dart';
 
 class EoqDescuentosCubit extends Cubit<EoqDescuentosState> {
-  EoqDescuentosCubit() : super(EoqDescuentosState());
+  EoqDescuentosCubit() : super(EoqDescuentosState(calculoQ: 0.00));
 
   void updateAll(
     double calculoQ,
@@ -25,6 +25,6 @@ class EoqDescuentosCubit extends Cubit<EoqDescuentosState> {
   }
 
   void reset() {
-    emit(EoqDescuentosState());
+    emit(EoqDescuentosState(calculoQ: 0.00));
   }
 }
