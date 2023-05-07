@@ -1,6 +1,9 @@
 import 'package:path/path.dart';
 import 'package:sqflite/sqflite.dart';
 
+import '../Modelos/eoq_basico_resultado.dart';
+import '../Modelos/eoq_descuentos_resultado.dart';
+import '../Modelos/eoq_faltantes_resultado.dart';
 import '../Modelos/producto.dart';
 import '../Modelos/proveedor.dart';
 
@@ -24,9 +27,10 @@ class DatabaseProvider {
         await db.execute('''
           CREATE TABLE Producto (
             id INTEGER PRIMARY KEY AUTOINCREMENT,
+            proveedor_id INTEGER NOT NULL,
             nombre TEXT NOT NULL,
             descripcion TEXT NOT NULL,
-            precioVenta REAL NOT NULL
+            precio_venta REAL NOT NULL
           )
         ''');
 
@@ -46,12 +50,12 @@ class DatabaseProvider {
           CREATE TABLE EoqDescuentos (
             id INTEGER PRIMARY KEY AUTOINCREMENT,
             producto_id INTEGER NOT NULL,
-            demanda_anual REAL NOT NULL,
+            cantidad_optima REAL NOT NULL,
+            cantidad_ordenar REAL NOT NULL,
+            costo_por_ordenar REAL NOT NULL,
             costo_pedido REAL NOT NULL,
             costo_mantenimiento REAL NOT NULL,
-            costo_unitario REAL NOT NULL,
-            descuento_desde REAL NOT NULL,
-            descuento_hasta REAL NOT NULL,
+            costo_total REAL NOT NULL,
             FOREIGN KEY (producto_id) REFERENCES Producto (id)
           )
         ''');
@@ -60,10 +64,12 @@ class DatabaseProvider {
           CREATE TABLE EoqFaltantes (
             id INTEGER PRIMARY KEY AUTOINCREMENT,
             producto_id INTEGER NOT NULL,
-            demanda_anual REAL NOT NULL,
-            costo_mantenimiento REAL NOT NULL,
-            costo_pedido REAL NOT NULL,
-            costo_faltante REAL NOT NULL,
+            cantidad_optima REAL NOT NULL,
+            nivel_maximo REAL NOT NULL,
+            tiempo_ciclo REAL NOT NULL,
+            numero_ciclo REAL NOT NULL,
+            faltante REAL NOT NULL,
+            costo_total REAL NOT NULL,
             FOREIGN KEY (producto_id) REFERENCES Producto (id)
           )
         ''');
@@ -133,5 +139,98 @@ class DatabaseProvider {
     );
   }
 
-  
+  // EoqBasicoResultado
+  Future<int> insertEoqBasico(EoqBasicoResultado eoqBasico) async {
+    final Database db = await initializeDB();
+    return db.insert('EoqBasicos', eoqBasico.toMap());
+  }
+
+  Future<List<EoqBasicoResultado>> retrieveEoqBasicos() async {
+    final Database db = await initializeDB();
+    final List<Map<String, Object?>> queryResult = await db.query('EoqBasicos');
+    return queryResult.map((e) => EoqBasicoResultado.fromMap(e)).toList();
+  }
+
+  Future<int> updateEoqBasico(EoqBasicoResultado eoqBasico) async {
+    final db = await initializeDB();
+    return await db.update(
+      'EoqBasicos',
+      eoqBasico.toMap(),
+      where: "id = ?",
+      whereArgs: [eoqBasico.id],
+    );
+  }
+
+  Future<void> deleteEoqBasico(int id) async {
+    final db = await initializeDB();
+    await db.delete(
+      'EoqBasicos',
+      where: "id = ?",
+      whereArgs: [id],
+    );
+  }
+
+  // EoqFaltantesResultado
+  Future<int> insertEoqFaltante(EoqFaltantesResultado eoqFaltante) async {
+    final Database db = await initializeDB();
+    return db.insert('EoqFaltantes', eoqFaltante.toMap());
+  }
+
+  Future<List<EoqFaltantesResultado>> retrieveEoqFaltantes() async {
+    final Database db = await initializeDB();
+    final List<Map<String, Object?>> queryResult =
+        await db.query('EoqFaltantes');
+    return queryResult.map((e) => EoqFaltantesResultado.fromMap(e)).toList();
+  }
+
+  Future<int> updateEoqFaltante(EoqFaltantesResultado eoqFaltante) async {
+    final db = await initializeDB();
+    return await db.update(
+      'EoqFaltantes',
+      eoqFaltante.toMap(),
+      where: "id = ?",
+      whereArgs: [eoqFaltante.id],
+    );
+  }
+
+  Future<void> deleteEoqFaltante(int id) async {
+    final db = await initializeDB();
+    await db.delete(
+      'EoqFaltantes',
+      where: "id = ?",
+      whereArgs: [id],
+    );
+  }
+
+  // EoqDescuentosResultado
+  Future<int> insertEoqDescuento(EoqDescuentosResultado eoqDescuento) async {
+    final Database db = await initializeDB();
+    return db.insert('EoqDescuentos', eoqDescuento.toMap());
+  }
+
+  Future<List<EoqDescuentosResultado>> retrieveEoqDescuentos() async {
+    final Database db = await initializeDB();
+    final List<Map<String, Object?>> queryResult =
+        await db.query('EoqDescuentos');
+    return queryResult.map((e) => EoqDescuentosResultado.fromMap(e)).toList();
+  }
+
+  Future<int> updateEoqDescuento(EoqDescuentosResultado eoqDescuento) async {
+    final db = await initializeDB();
+    return await db.update(
+      'EoqDescuentos',
+      eoqDescuento.toMap(),
+      where: "id = ?",
+      whereArgs: [eoqDescuento.id],
+    );
+  }
+
+  Future<void> deleteEoqDescuento(int id) async {
+    final db = await initializeDB();
+    await db.delete(
+      'EoqDescuentos',
+      where: "id = ?",
+      whereArgs: [id],
+    );
+  }
 }
