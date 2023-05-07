@@ -60,10 +60,12 @@ class DatabaseProvider {
           CREATE TABLE EoqFaltantes (
             id INTEGER PRIMARY KEY AUTOINCREMENT,
             producto_id INTEGER NOT NULL,
-            demanda_anual REAL NOT NULL,
-            costo_mantenimiento REAL NOT NULL,
-            costo_pedido REAL NOT NULL,
-            costo_faltante REAL NOT NULL,
+            cantidad_optima REAL NOT NULL,
+            nivel_maximo REAL NOT NULL,
+            tiempo_ciclo REAL NOT NULL,
+            numero_ciclo REAL NOT NULL,
+            faltante REAL NOT NULL,
+            costo_total REAL NOT NULL,
             FOREIGN KEY (producto_id) REFERENCES Producto (id)
           )
         ''');

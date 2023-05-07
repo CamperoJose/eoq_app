@@ -1,10 +1,14 @@
 import 'dart:math';
 
+import 'package:eoq_app/UI/eoq_descuentos_form.dart';
 import 'package:flutter/material.dart';
+import 'package:flutter_bloc/flutter_bloc.dart';
 import 'package:flutter_bootstrap/flutter_bootstrap.dart';
 import '../Componentes/chat_gpt.dart';
 import '../Componentes/statistics.dart';
 import '../Componentes/text_field2.dart';
+import '../Cubit/demanda_costo_cubit.dart';
+import '../Cubit/eoq_descuentos_cubit.dart';
 import '../Modelos/eoq_basico.dart';
 import '../Modelos/eoq_faltantes.dart';
 
@@ -34,156 +38,263 @@ class _CalculatorViewState extends State<CalculatorView> {
   bool CalculoEoqFaltantes = false;
   bool CalculoEoqDescuentos = false;
 
+  void _updateDemanda() {
+    final value = double.tryParse(demandaController.text) ?? 0.0;
+    context.read<DemandaCostoCubit>().updateDemanda(value);
+  }
+
+  void _updateCostoPedido() {
+    final value = double.tryParse(costoPedidoController.text) ?? 0.0;
+    context.read<DemandaCostoCubit>().updateCostoPedido(value);
+  }
+
+  @override
+  void initState() {
+    super.initState();
+    demandaController.addListener(_updateDemanda);
+    costoPedidoController.addListener(_updateCostoPedido);
+  }
+
+  @override
+  void dispose() {
+    demandaController.removeListener(_updateDemanda);
+    costoPedidoController.removeListener(_updateCostoPedido);
+
+    demandaController.dispose();
+    costoPedidoController.dispose();
+    super.dispose();
+  }
+
   @override
   Widget build(BuildContext context) {
+    final eoq_descuentos_cubit = context.watch<EoqDescuentosCubit>();
+    final calculoQ = eoq_descuentos_cubit.state.calculoQ;
+    final cantidadOrdenar = eoq_descuentos_cubit.state.cantidadOrdenar;
+    final costoPorOrdenar = eoq_descuentos_cubit.state.costoPorOrdenar;
+    final costoAnualPedido = eoq_descuentos_cubit.state.costoAnualPedido;
+    final costoAnualMantenimiento =
+        eoq_descuentos_cubit.state.costoAnualMantenimiento;
+    final costoTotal = eoq_descuentos_cubit.state.costoTotal;
     return Scaffold(
       appBar: AppBar(
         title: Text('Mi Aplicación'),
       ),
-      body: Container(
-          decoration: BoxDecoration(
-            image: DecorationImage(
-              image: AssetImage('assets/wallpaper01.png'),
-              fit: BoxFit.cover, // o BoxFit.contain
-            ),
-          ),
-          child: Container(
-            child: SingleChildScrollView(
-              child: Padding(
-                padding: const EdgeInsets.only(
-                    left: 16.0, right: 16.0, top: 16, bottom: 500),
-                child: LayoutBuilder(
-                  builder: (BuildContext context, BoxConstraints constraints) {
-                    int columnCount = 1;
-                    if (constraints.maxWidth >= 800) {
-                      columnCount = 3;
-                    }
-                    return BootstrapContainer(
-                      fluid: true,
-                      children: [
-                        BootstrapRow(
-                          children: [
-                            BootstrapCol(
-                              sizes: 'col-${12 ~/ columnCount}',
-                              child: _buildProveedorForm(),
-                            ),
-                            BootstrapCol(
-                              sizes: 'col-${12 ~/ columnCount}',
-                              child: _buildProductoForm(),
-                            ),
-                            BootstrapCol(
-                              sizes: 'col-${12 ~/ columnCount}',
-                              child: _buildInventarioEoqBasicoForm(),
-                            ),
-                          ],
-                        ),
-                        const SizedBox(height: 16),
-                        // StatisticsGraph
-                        Column(
-                          children: [
-                            Text(
-                              "Cálculos",
-                              style: TextStyle(
-                                  fontSize: 24,
-                                  fontWeight: FontWeight.bold,
-                                  color: Colors.white),
-                              textAlign: TextAlign.center,
-                            ),
-                            SizedBox(height: 10),
-                            Row(
-                              mainAxisAlignment: MainAxisAlignment.spaceEvenly,
+      body: Stack(
+        children: [
+          Container(
+              decoration: const BoxDecoration(
+                image: DecorationImage(
+                  image: AssetImage('assets/wallpaper01.png'),
+                  fit: BoxFit.cover, // o BoxFit.contain
+                ),
+              ),
+              child: SingleChildScrollView(
+                child: Padding(
+                  padding: const EdgeInsets.only(
+                    left: 16.0,
+                    right: 16.0,
+                    top: 16,
+                  ),
+                  child: LayoutBuilder(
+                    builder:
+                        (BuildContext context, BoxConstraints constraints) {
+                      int columnCount = 1;
+                      if (constraints.maxWidth >= 800) {
+                        columnCount = 3;
+                      }
+                      return BootstrapContainer(
+                        fluid: true,
+                        children: [
+                          BootstrapRow(
+                            children: [
+                              BootstrapCol(
+                                sizes: 'col-${12 ~/ columnCount}',
+                                child: _buildProveedorForm(),
+                              ),
+                              BootstrapCol(
+                                sizes: 'col-${12 ~/ columnCount}',
+                                child: _buildProductoForm(),
+                              ),
+                              BootstrapCol(
+                                sizes: 'col-${12 ~/ columnCount}',
+                                child: _buildInventarioEoqBasicoForm(),
+                              ),
+                            ],
+                          ),
+                          const SizedBox(height: 16),
+                          BootstrapRow(
+                            children: [
+                              BootstrapCol(
+                                sizes: 'col-md-4 col-sm-12',
+                                child: Card(
+                                  elevation: 5,
+                                  child: Padding(
+                                    padding: const EdgeInsets.all(16),
+                                    child: Column(
+                                      mainAxisAlignment:
+                                          MainAxisAlignment.center,
+                                      children: [
+                                        const Text(
+                                          "EOQ BASICO",
+                                          textAlign: TextAlign.center,
+                                          style: TextStyle(
+                                            color: Colors.orange,
+                                            fontSize: 20,
+                                            fontWeight: FontWeight.bold,
+                                          ),
+                                        ),
+                                        const SizedBox(height: 10),
+                                        Text(
+                                          !CalculoEoqBasico
+                                              ? "Sin Datos Suficientes"
+                                              : "Q: ${CalculosEoqBasico[0]} unidades\nT: ${CalculosEoqBasico[1]} meses\nN: ${CalculosEoqBasico[2]} pedidos\nCT: ${CalculosEoqBasico[3]} \$",
+                                          textAlign: TextAlign.center,
+                                          style: const TextStyle(
+                                            color: Colors.white,
+                                            fontSize: 18,
+                                          ),
+                                        ),
+                                      ],
+                                    ),
+                                  ),
+                                ),
+                              ),
+                              BootstrapCol(
+                                sizes: 'col-md-4 col-sm-12',
+                                child: Card(
+                                  elevation: 5,
+                                  child: Padding(
+                                    padding: const EdgeInsets.all(16),
+                                    child: Column(
+                                      mainAxisAlignment:
+                                          MainAxisAlignment.center,
+                                      children: [
+                                        const Text(
+                                          "EOQ FALTANTES",
+                                          textAlign: TextAlign.center,
+                                          style: TextStyle(
+                                            color: Colors.orange,
+                                            fontSize: 20,
+                                            fontWeight: FontWeight.bold,
+                                          ),
+                                        ),
+                                        const SizedBox(height: 10),
+                                        Text(
+                                          !CalculoEoqFaltantes
+                                              ? "Sin Datos Suficientes"
+                                              : "Q: ${CalculosEoqFaltantes[0]} unidades\nS: ${CalculosEoqFaltantes[1]} unidades\nT: ${CalculosEoqFaltantes[2]} meses\nN: ${CalculosEoqFaltantes[3]} pedidos\nF. maximo: ${CalculosEoqFaltantes[4]} unidades\nCT: ${CalculosEoqFaltantes[5]} \$",
+                                          textAlign: TextAlign.center,
+                                          style: const TextStyle(
+                                            color: Colors.white,
+                                            fontSize: 18,
+                                          ),
+                                        ),
+                                      ],
+                                    ),
+                                  ),
+                                ),
+                              ),
+                              BootstrapCol(
+                                sizes: 'col-md-4 col-sm-12',
+                                child: Card(
+                                  elevation: 5,
+                                  child: Padding(
+                                    padding: const EdgeInsets.all(16),
+                                    child: Column(
+                                      mainAxisAlignment:
+                                          MainAxisAlignment.center,
+                                      children: [
+                                        const Text(
+                                          "EOQ DESCUENTOS",
+                                          textAlign: TextAlign.center,
+                                          style: TextStyle(
+                                            color: Colors.orange,
+                                            fontSize: 20,
+                                            fontWeight: FontWeight.bold,
+                                          ),
+                                        ),
+                                        const SizedBox(height: 10),
+                                        (calculoQ == null ||
+                                                cantidadOrdenar == null ||
+                                                costoPorOrdenar == null ||
+                                                costoAnualPedido == null ||
+                                                costoAnualMantenimiento ==
+                                                    null ||
+                                                costoTotal == null)
+                                            ? ElevatedButton(
+                                                onPressed: () {
+                                                  setState(() {
+                                                    Navigator.push(
+                                                        context,
+                                                        MaterialPageRoute(
+                                                            builder: (context) =>
+                                                                EoqDescuentosForm()));
+                                                    CalculoEoqDescuentos = true;
+                                                  });
+                                                },
+                                                style: ElevatedButton.styleFrom(
+                                                  foregroundColor: Colors.white,
+                                                  backgroundColor:
+                                                      Colors.orange,
+                                                ),
+                                                child: const Text(
+                                                    "Agregar Cantidades"),
+                                              )
+                                            : Column(
+                                                children: [
+                                                  Text(
+                                                    "Q: $calculoQ\n"
+                                                    "Cantidad Ordenar: $cantidadOrdenar\n"
+                                                    "Costo Por Ordenar: $costoPorOrdenar\n"
+                                                    "Costo Anual Pedido: $costoAnualPedido\n"
+                                                    "Costo Anual Mantenimiento: $costoAnualMantenimiento\n"
+                                                    "Costo Total: $costoTotal",
+                                                    textAlign: TextAlign.left,
+                                                    style: TextStyle(
+                                                      fontSize: 16,
+                                                    ),
+                                                  ),
+                                                ],
+                                              ),
+                                      ],
+                                    ),
+                                  ),
+                                ),
+                              ),
+                            ],
+                          ),
+
+                          Padding(
+                            padding: const EdgeInsets.all(16.0),
+                            child: BootstrapContainer(
+                              fluid: true,
                               children: [
-                                Column(
-                                  mainAxisAlignment: MainAxisAlignment.center,
+                                BootstrapRow(
                                   children: [
-                                    Text(
-                                      "EOQ BASICO",
-                                      style: TextStyle(
-                                        color: Colors.orange,
-                                        fontSize: 20,
-                                      ),
-                                    ),
-                                    Text(
-                                      !CalculoEoqBasico
-                                          ? "Sin Datos Suficientes"
-                                          : "Q: ${CalculosEoqBasico[0]} unidades\nT: ${CalculosEoqBasico[1]} meses\nN: ${CalculosEoqBasico[2]} pedidos\nCT: ${CalculosEoqBasico[3]} \$",
-                                      style: TextStyle(
-                                        color: Colors.white,
-                                        fontSize: 18,
-                                      ),
-                                    ),
-                                  ],
-                                ),
-                                SizedBox(width: 10),
-                                Column(
-                                  mainAxisAlignment: MainAxisAlignment.center,
-                                  children: [
-                                    Text(
-                                      "EOQ FALTANTES",
-                                      style: TextStyle(
-                                        color: Colors.orange,
-                                        fontSize: 20,
-                                      ),
-                                    ),
-                                    Text(
-                                      !CalculoEoqFaltantes
-                                          ? "Sin Datos Suficientes"
-                                          : "Q: ${CalculosEoqFaltantes[0]} unidades\nS: ${CalculosEoqFaltantes[1]} unidades\nT: ${CalculosEoqFaltantes[2]} meses\nN: ${CalculosEoqFaltantes[3]} pedidos\nF. maximo: ${CalculosEoqFaltantes[4]} unidades\nCT: ${CalculosEoqFaltantes[5]} \$",
-                                          
-                                      style: TextStyle(
-                                        color: Colors.white,
-                                        fontSize: 18,
-                                      ),
-                                    ),
-                                  ],
-                                ),
-                                SizedBox(width: 10),
-                                Column(
-                                  mainAxisAlignment: MainAxisAlignment.center,
-                                  children: [
-                                    Text(
-                                      "EOQ DESCUENTOS POR CANTIDAD",
-                                      style: TextStyle(
-                                        color: Colors.orange,
-                                        fontSize: 20,
+                                    BootstrapCol(
+                                      sizes: 'col-12 col-md-6',
+                                      child: const ChatGPTMessage(
+                                        message: 'Hola soy chatGPT',
                                       ),
                                     ),
                                   ],
                                 ),
                               ],
                             ),
-                          ],
-                        ),
-                        Padding(
-                          padding: EdgeInsets.all(16.0),
-                          child: BootstrapContainer(
-                            fluid: true,
-                            children: [
-                              BootstrapRow(
-                                children: [
-                                  BootstrapCol(
-                                    sizes: 'col-12 col-md-6',
-                                    child: ChatGPTMessage(
-                                      message: 'Hola soy chatGPT',
-                                    ),
-                                  ),
-                                ],
-                              ),
-                            ],
                           ),
-                        ),
-                        // StatisticsGraph
-                        const Padding(
-                          padding: EdgeInsets.all(16.0),
-                          child: StatisticsGraph(),
-                        ),
-                      ],
-                    );
-                  },
+                          // StatisticsGraph
+                          const Padding(
+                            padding: EdgeInsets.all(16.0),
+                            child: StatisticsGraph(),
+                          ),
+                        ],
+                      );
+                    },
+                  ),
                 ),
-              ),
-            ),
-          )),
+              )),
+        ],
+      ),
     );
   }
 
@@ -316,7 +427,6 @@ class _CalculatorViewState extends State<CalculatorView> {
                     labelText: 'P: Costo Faltante',
                     prefixIcon: Icons.expand_more_outlined,
                   ),
-                  
                   const SizedBox(height: 16),
                   ElevatedButton(
                     onPressed: () {
@@ -361,8 +471,7 @@ class _CalculatorViewState extends State<CalculatorView> {
                             costoMantenerController != null &&
                             costoPedidoController != null &&
                             costoPorUnidadController != null &&
-                            costoFaltanteControler != null 
-                            ) {
+                            costoFaltanteControler != null) {
                           CalculoEoqFaltantes = true;
                           CalculosEoqFaltantes[0] = calcularFaltantes.calcularQ(
                             double.parse(demandaController.text),
