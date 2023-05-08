@@ -605,8 +605,8 @@ class _CalculatorViewState extends State<CalculatorView> {
                               children: [
                                 BootstrapCol(
                                   sizes: 'col-12 col-md-6',
-                                  child: const ChatGPTMessage(
-                                    message: 'Hola soy chatGPT',
+                                  child: ChatGPTMessage(
+                                    eoqData: [CalculosEoqBasico[3],CalculosEoqFaltantes[5], costoTotal],
                                   ),
                                 ),
                               ],

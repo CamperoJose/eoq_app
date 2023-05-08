@@ -1,13 +1,38 @@
 import 'package:flutter/material.dart';
 
-class ChatGPTMessage extends StatelessWidget {
-  final String message;
-  final String imageUrl;
+import 'chat_gpt_response.dart';
 
-  const ChatGPTMessage({Key? key, required this.message, this.imageUrl = 'assets/cait_gpt.jpeg'}) : super(key: key);
+class ChatGPTMessage extends StatelessWidget {
+  final String imageUrl;
+  final List<double?> eoqData;
+
+  const ChatGPTMessage({
+    Key? key,
+    required this.eoqData,
+    this.imageUrl = 'assets/cait_gpt.jpeg',
+  }) : super(key: key);
 
   @override
   Widget build(BuildContext context) {
+    if (eoqData[0] == 0 && eoqData[1] == 0 && eoqData[2] == null) {
+      return buildMessage(context, 'Hola, en qué puedo ayudarte?');
+    } else {
+      return FutureBuilder<String>(
+        future: getGPTAdvice(eoqData),
+        builder: (context, snapshot) {
+          if (snapshot.connectionState == ConnectionState.waiting) {
+            return const Center(child: CircularProgressIndicator());
+          } else if (snapshot.hasError) {
+            return Center(child: Text('Error: ${snapshot.error}'));
+          } else {
+            return buildMessage(context, snapshot.data!);
+          }
+        },
+      );
+    }
+  }
+
+  Widget buildMessage(BuildContext context, String message) {
     return Container(
       padding: const EdgeInsets.all(16),
       decoration: BoxDecoration(

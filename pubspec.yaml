@@ -39,6 +39,9 @@ dependencies:
   sqflite: ^2.2.8+1
   flutter_bloc: ^8.1.2
   fl_chart: ^0.36.0
+  dart_openai: ^1.9.8
+  flutter_dotenv: ^5.0.2
+
 
 dev_dependencies:
   flutter_test:
